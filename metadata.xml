@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <name>_ Hide Cursor</name>
+    <directory>hide cursor</directory>
+    <description>Always hides the mouse cursor in menus and during gameplay.</description>
+    <version>1</version>
+    <visibility>Private</visibility>
+    <tag id="Lua"/>
+    <tag id="Tweaks"/>
+</metadata>
