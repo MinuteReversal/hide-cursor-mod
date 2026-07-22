@@ -4,7 +4,7 @@
     <directory>hide cursor</directory>
     <description>Always hides the mouse cursor in menus and during gameplay.</description>
     <version>1</version>
-    <visibility>Private</visibility>
+    <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Tweaks"/>
 </metadata>
