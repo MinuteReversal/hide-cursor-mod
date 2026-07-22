@@ -5,3 +5,7 @@ with a transparent image.
 
 The cursor remains hidden in menus and during gameplay, even when the mouse is
 moved or clicked.
+
+## Tools
+
+[Open ModUploader](<~/Library/Application Support/Steam/steamapps/common/The Binding of Isaac Rebirth/tools/ModUploader/>)
