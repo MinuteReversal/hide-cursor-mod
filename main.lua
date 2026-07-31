@@ -1,17 +1,26 @@
 local mod = RegisterMod("Hide Cursor", 1)
 
--- resources/gfx/ui/cursor.png  = transparent (hide native cursor always)
--- resources/gfx/ui/cross_white.png / cross_red.png = user PS icons
--- Show when MouseControl is on and player has a mouse-aim item.
--- White when idle, red while left mouse button is held.
+-- Hide Cursor
+-- EN: Transparent native cursor by default. Restores a custom crosshair only when
+--     MouseControl=1 and the player holds a mouse-aim item. White idle, red while LMB held.
+--     Keyboard/controller (MouseControl=0): no change — cursor stays fully hidden.
+-- ZH: 默认隐藏系统光标；仅 MouseControl=1 且持有瞄准类道具时显示自定义准星。
+--     未按左键白色，按住左键红色。键盘/手柄玩家无额外效果。
+-- JA: デフォルトでシステムカーソルを非表示。MouseControl=1 かつマウス照準アイテム所持時のみ
+--     カスタム照準を表示。通常は白、LMB 押し中は赤。キーボード/コントローラは影響なし。
 --
--- Do not use the `debug` library (missing in AB+ and aborts the script).
+-- Assets:
+--   resources/gfx/ui/cursor.png       — transparent (always hide native cursor)
+--   resources/gfx/ui/cross_white.png  — 64x64 white cross (PS)
+--   resources/gfx/ui/cross_red.png    — 64x64 red cross (PS)
+--
+-- Note: do not use the Lua `debug` library (unavailable in AB+; aborts the script).
 
 local spriteWhite = nil
 local spriteRed = nil
 local spritesTried = false
 
--- nil = unknown; true/false after options.ini probe
+-- nil = not read yet; true/false after options.ini probe
 local mouseControl = nil
 
 local MOUSE_AIM_ITEMS = {
@@ -44,7 +53,7 @@ local function refreshMouseControl()
 	mouseControl = nil
 	local paths = {}
 
-	-- Absolute path (AB+ often has no os.getenv)
+	-- Prefer absolute path: AB+ often has no os.getenv
 	paths[#paths + 1] = "/Users/zhuang/Library/Application Support/Binding of Isaac Afterbirth+/options.ini"
 
 	if os ~= nil and os.getenv ~= nil then
@@ -74,7 +83,7 @@ local function refreshMouseControl()
 		end
 	end
 
-	-- Unreadable ini → assume mouse mode on (still requires aim item to draw)
+	-- Unreadable ini → assume mouse mode on (still requires an aim item to draw)
 	mouseControl = true
 	Isaac.DebugString("Hide Cursor: options.ini unreadable; assuming MouseControl=1")
 end
@@ -124,7 +133,7 @@ local function hasMouseAimItem()
 end
 
 local function shouldShowCursor()
-	-- Controller / MouseControl=0 → never draw
+	-- MouseControl=0 (keyboard/controller): never draw the custom crosshair
 	if mouseControl == false then
 		return false
 	end
@@ -163,7 +172,7 @@ function mod:onRender()
 		return
 	end
 
-	-- White idle / red while LMB held (vanilla menu behaviour)
+	-- White idle; red while left mouse button held (vanilla menu-style)
 	local sprite = spriteWhite
 	if isLeftMouseHeld() and spriteRed ~= nil then
 		sprite = spriteRed
