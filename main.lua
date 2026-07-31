@@ -20,9 +20,14 @@ local spriteWhite = nil
 local spriteRed = nil
 local spritesTried = false
 
+-- 64x64 PS assets are large on Isaac's internal resolution; 0.5 ≈ 32px on screen
+local CURSOR_SCALE = 0.5
+
+
 -- nil = not read yet; true/false after options.ini probe
 local mouseControl = nil
 
+-- Collectible ids (AB+ enums)
 local MOUSE_AIM_ITEMS = {
 	168, -- Epic Fetus
 	329, -- Ludovico Technique
@@ -30,6 +35,13 @@ local MOUSE_AIM_ITEMS = {
 	47, -- Doctor's Remote
 	465, -- Analog Stick
 	400, -- Spear of Destiny
+}
+
+-- Weapon types that imply mouse-aim style control (see enums.lua)
+-- WEAPON_ROCKETS = 6 (Epic Fetus), WEAPON_LUDOVICO_TECHNIQUE = 8
+local MOUSE_AIM_WEAPONS = {
+	6,
+	8,
 }
 
 local function tryReadMouseControl(path)
@@ -117,16 +129,38 @@ local function loadSprites()
 	return true
 end
 
+local function playerNeedsAimCursor(player)
+	if player == nil then
+		return false
+	end
+
+	for j = 1, #MOUSE_AIM_ITEMS do
+		if player:HasCollectible(MOUSE_AIM_ITEMS[j]) then
+			return true
+		end
+	end
+
+	-- Fallback: weapon type (Epic Fetus rockets / Ludovico)
+	-- HasWeaponType exists on AB+ EntityPlayer
+	if player.HasWeaponType ~= nil then
+		for j = 1, #MOUSE_AIM_WEAPONS do
+			local ok, has = pcall(function()
+				return player:HasWeaponType(MOUSE_AIM_WEAPONS[j])
+			end)
+			if ok and has then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
 local function hasMouseAimItem()
 	local n = Game():GetNumPlayers()
 	for i = 0, n - 1 do
-		local player = Isaac.GetPlayer(i)
-		if player ~= nil then
-			for j = 1, #MOUSE_AIM_ITEMS do
-				if player:HasCollectible(MOUSE_AIM_ITEMS[j]) then
-					return true
-				end
-			end
+		if playerNeedsAimCursor(Isaac.GetPlayer(i)) then
+			return true
 		end
 	end
 	return false
@@ -140,7 +174,15 @@ local function shouldShowCursor()
 	return hasMouseAimItem()
 end
 
+-- Align with in-game mouse aim (Epic Fetus reticle uses world mouse coords).
 local function getMousePos()
+	local ok, screen = pcall(function()
+		local world = Input.GetMousePosition(true)
+		return Isaac.WorldToScreen(world)
+	end)
+	if ok and screen ~= nil then
+		return screen
+	end
 	return Input.GetMousePosition(false)
 end
 
@@ -179,6 +221,7 @@ function mod:onRender()
 	end
 
 	local pos = getMousePos()
+	sprite.Scale = Vector(CURSOR_SCALE, CURSOR_SCALE)
 	sprite:Update()
 	sprite:Render(pos, Vector(0, 0), Vector(0, 0))
 end

@@ -4,7 +4,7 @@
     <directory>hide cursor</directory>
     <id>3769589830</id>
     <description>Hides the mouse cursor by default. Restores a white/red crosshair only when MouseControl=1 and you hold mouse-aim items (Epic Fetus, Ludovico, etc.). Keyboard/controller (MouseControl off): no change. 中文：默认隐藏；仅鼠标模式+瞄准道具时显示准星。日本語：デフォルト非表示。MouseControl=1かつ照準アイテム時のみ表示。Source: https://github.com/MinuteReversal/hide-cursor-mod</description>
-    <version>7</version>
+    <version>8</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Tweaks"/>
