@@ -1,16 +1,17 @@
 local mod = RegisterMod("Hide Cursor", 1)
 
--- resources/gfx/ui/cursor.png is transparent (native cursor always hidden).
--- Draw a stand-in cursor when mouse-aim items are held, gated by MouseControl.
+-- resources/gfx/ui/cursor.png  = transparent (hide native cursor always)
+-- resources/gfx/ui/cross_white.png / cross_red.png = user PS icons
+-- Show when MouseControl is on and player has a mouse-aim item.
+-- White when idle, red while left mouse button is held.
 --
--- IMPORTANT: AB+ Lua has no `debug` library — using it aborts the whole script.
+-- Do not use the `debug` library (missing in AB+ and aborts the script).
 
-local cursorSprite = nil
-local cursorReady = false
+local spriteWhite = nil
+local spriteRed = nil
+local spritesTried = false
 
--- nil  = options.ini not readable (show cursor with aim items; best-effort)
--- true = MouseControl=1
--- false = MouseControl=0 (never show; controller-friendly)
+-- nil = unknown; true/false after options.ini probe
 local mouseControl = nil
 
 local MOUSE_AIM_ITEMS = {
@@ -41,8 +42,10 @@ end
 
 local function refreshMouseControl()
 	mouseControl = nil
-
 	local paths = {}
+
+	-- Absolute path (AB+ often has no os.getenv)
+	paths[#paths + 1] = "/Users/zhuang/Library/Application Support/Binding of Isaac Afterbirth+/options.ini"
 
 	if os ~= nil and os.getenv ~= nil then
 		local home = os.getenv("HOME")
@@ -52,13 +55,11 @@ local function refreshMouseControl()
 			paths[#paths + 1] = home .. "/Library/Application Support/Binding of Isaac Repentance/options.ini"
 			paths[#paths + 1] = home .. "/Documents/My Games/Binding of Isaac Afterbirth+/options.ini"
 			paths[#paths + 1] = home .. "/Documents/My Games/Binding of Isaac Repentance+/options.ini"
-			paths[#paths + 1] = home .. "/Documents/My Games/Binding of Isaac Repentance/options.ini"
 		end
-		local userprofile = os.getenv("USERPROFILE")
-		if userprofile ~= nil and userprofile ~= "" then
-			paths[#paths + 1] = userprofile .. "\\Documents\\My Games\\Binding of Isaac Afterbirth+\\options.ini"
-			paths[#paths + 1] = userprofile .. "\\Documents\\My Games\\Binding of Isaac Repentance+\\options.ini"
-			paths[#paths + 1] = userprofile .. "\\Documents\\My Games\\Binding of Isaac Repentance\\options.ini"
+		local up = os.getenv("USERPROFILE")
+		if up ~= nil and up ~= "" then
+			paths[#paths + 1] = up .. "\\Documents\\My Games\\Binding of Isaac Afterbirth+\\options.ini"
+			paths[#paths + 1] = up .. "\\Documents\\My Games\\Binding of Isaac Repentance+\\options.ini"
 		end
 	end
 
@@ -67,35 +68,43 @@ local function refreshMouseControl()
 		if ok and result ~= nil then
 			mouseControl = result
 			Isaac.DebugString(
-				"Hide Cursor: MouseControl=" .. (mouseControl and "1" or "0") .. " from " .. paths[i]
+				"Hide Cursor: MouseControl=" .. (mouseControl and "1" or "0") .. " @ " .. paths[i]
 			)
 			return
 		end
 	end
 
-	Isaac.DebugString("Hide Cursor: options.ini unreadable; aim-item cursor allowed")
+	-- Unreadable ini → assume mouse mode on (still requires aim item to draw)
+	mouseControl = true
+	Isaac.DebugString("Hide Cursor: options.ini unreadable; assuming MouseControl=1")
 end
 
-local function loadCursorSprite()
-	if cursorReady then
-		return cursorSprite ~= nil
+local function loadSprites()
+	if spritesTried then
+		return spriteWhite ~= nil
 	end
-	cursorReady = true
+	spritesTried = true
 
 	local ok, err = pcall(function()
-		local s = Sprite()
-		s:Load("gfx/ui/default_cursor.anm2", true)
-		s:Play("Idle", true)
-		cursorSprite = s
+		local w = Sprite()
+		w:Load("gfx/ui/cross_white.anm2", true)
+		w:Play("Idle", true)
+		spriteWhite = w
+
+		local r = Sprite()
+		r:Load("gfx/ui/cross_red.anm2", true)
+		r:Play("Idle", true)
+		spriteRed = r
 	end)
 
 	if not ok then
-		Isaac.DebugString("Hide Cursor: sprite load failed: " .. tostring(err))
-		cursorSprite = nil
+		Isaac.DebugString("Hide Cursor: sprite load FAILED: " .. tostring(err))
+		spriteWhite = nil
+		spriteRed = nil
 		return false
 	end
 
-	Isaac.DebugString("Hide Cursor: cursor sprite OK")
+	Isaac.DebugString("Hide Cursor: cross_white / cross_red loaded")
 	return true
 end
 
@@ -115,16 +124,30 @@ local function hasMouseAimItem()
 end
 
 local function shouldShowCursor()
-	-- Explicitly disabled in options → never (controller players)
+	-- Controller / MouseControl=0 → never draw
 	if mouseControl == false then
 		return false
 	end
-	-- true or nil (unreadable): show when holding an aim item
 	return hasMouseAimItem()
+end
+
+local function getMousePos()
+	return Input.GetMousePosition(false)
+end
+
+local function isLeftMouseHeld()
+	local held = false
+	pcall(function()
+		held = Input.IsMouseBtnPressed(Mouse.MOUSE_BUTTON_LEFT)
+	end)
+	return held
 end
 
 function mod:onGameStart()
 	refreshMouseControl()
+	spritesTried = false
+	spriteWhite = nil
+	spriteRed = nil
 end
 
 function mod:onRender()
@@ -136,12 +159,19 @@ function mod:onRender()
 		return
 	end
 
-	if not loadCursorSprite() then
+	if not loadSprites() then
 		return
 	end
 
-	local pos = Input.GetMousePosition(false)
-	cursorSprite:Render(pos, Vector(0, 0), Vector(0, 0))
+	-- White idle / red while LMB held (vanilla menu behaviour)
+	local sprite = spriteWhite
+	if isLeftMouseHeld() and spriteRed ~= nil then
+		sprite = spriteRed
+	end
+
+	local pos = getMousePos()
+	sprite:Update()
+	sprite:Render(pos, Vector(0, 0), Vector(0, 0))
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.onGameStart)
