@@ -1,4 +1,61 @@
 local mod = RegisterMod("Hide Cursor", 1)
+local json = require("json")
+local config = { alwaysShowCursor = false }
+local menuOpen = false
+local menuRegistered = false
+
+local function writeSettings()
+	mod:SaveData(json.encode(config))
+	Isaac.DebugString("Hide Cursor: native alwaysShow=" .. (config.alwaysShowCursor and "1" or "0"))
+end
+
+local function loadSettings()
+	local saved = nil
+	if mod:HasData() then
+		local ok, value = pcall(json.decode, mod:LoadData())
+		if ok and type(value) == "table" then saved = value end
+	end
+	config.alwaysShowCursor = saved ~= nil and saved.alwaysShowCursor == true
+	Isaac.DebugString("Hide Cursor: native alwaysShow=" .. (config.alwaysShowCursor and "1" or "0"))
+end
+
+local function setAlwaysShow(value)
+	config.alwaysShowCursor = value == true
+	writeSettings()
+end
+
+local function setupConfigMenu()
+	if menuRegistered or not ModConfigMenu then return end
+	ModConfigMenu.AddSetting("Hide Cursor", "General", {
+		Type = ModConfigMenu.OptionType.BOOLEAN,
+		CurrentSetting = function() return config.alwaysShowCursor end,
+		Display = function() return "Always Show Cursor: " .. (config.alwaysShowCursor and "ON" or "OFF") end,
+		OnChange = setAlwaysShow,
+		Info = { "Keep the cursor visible inside the game. Default: OFF." },
+	})
+	menuRegistered = true
+end
+
+local function renderConfigMenu()
+	setupConfigMenu()
+	-- MCM has its own F10 binding. Use the standalone panel only without MCM.
+	if not ModConfigMenu and Input.IsButtonTriggered(Keyboard.KEY_F10, 0) then
+		menuOpen = not menuOpen
+	end
+	if not menuOpen then return end
+	if Input.IsButtonTriggered(Keyboard.KEY_ESCAPE, 0) then
+		menuOpen = false
+		return
+	end
+	if Input.IsButtonTriggered(Keyboard.KEY_ENTER, 0)
+		or Input.IsButtonTriggered(Keyboard.KEY_LEFT, 0)
+		or Input.IsButtonTriggered(Keyboard.KEY_RIGHT, 0) then
+		setAlwaysShow(not config.alwaysShowCursor)
+	end
+	Isaac.RenderText("Hide Cursor", 50, 50, 1, 1, 1, 1)
+	Isaac.RenderText("Always Show Cursor: " .. (config.alwaysShowCursor and "ON" or "OFF"), 50, 66, 1, 1, 1, 1)
+	Isaac.RenderText("Enter / Left / Right: change    Esc / F10: close", 50, 82, 1, 1, 1, 1)
+end
 
 -- Hide Cursor
 -- EN: Transparent native cursor by default. Restores a custom crosshair only when
@@ -195,6 +252,10 @@ local function isLeftMouseHeld()
 end
 
 function mod:onGameStart()
+	Isaac.DebugString("Hide Cursor: native phase=game")
+	loadSettings()
+	writeSettings()
+	menuOpen = false
 	refreshMouseControl()
 	spritesTried = false
 	spriteWhite = nil
@@ -202,11 +263,12 @@ function mod:onGameStart()
 end
 
 function mod:onRender()
-	if Game():IsPaused() then
+	renderConfigMenu()
+	if Game():IsPaused() and not config.alwaysShowCursor then
 		return
 	end
 
-	if not shouldShowCursor() then
+	if not config.alwaysShowCursor and not shouldShowCursor() then
 		return
 	end
 
@@ -228,7 +290,19 @@ end
 
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.onGameStart)
 mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.onRender)
+mod:AddCallback(ModCallbacks.MC_INPUT_ACTION, function(_, _, hook)
+	if not menuOpen then return end
+	if hook == InputHook.GET_ACTION_VALUE then return 0 end
+	return false
+end)
+mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, function()
+	Isaac.DebugString("Hide Cursor: native phase=menu")
+	menuOpen = false
+	writeSettings()
+end)
 
+loadSettings()
+setupConfigMenu()
 refreshMouseControl()
 Isaac.DebugString("Hide Cursor: loaded")
 print("Hide Cursor: loaded")

@@ -1,5 +1,15 @@
 # Hide Cursor
 
+Native desktop adapters for macOS, Windows x86/x64 and Linux X11/XWayland are available as a preview. See [platform setup and validation limits](native/README_zh.md). The native components require a separate launcher/helper; Workshop Lua subscription alone does not load them. Windows has build verification only; Linux has Xvfb window tests, not real-game acceptance.
+
+
+
+## Cursor setting
+
+**Always Show Cursor** defaults to OFF. In a run, press **F10** to open the standalone panel, **Enter / Left / Right** to toggle, and **Esc / F10** to close. With Mod Config Menu installed, use **Hide Cursor → General** instead.
+
+ON always draws the existing white/red crosshair in a run, including while paused, regardless of MouseControl or items. Settings persist per save slot. The panel blocks player input but does not pause the scene. The render callback is in-game only. With the macOS trial launcher, the native component shows the system arrow in main menus only when Always Show Cursor is ON. OFF hides the menu cursor too. During a run the system arrow is hidden to avoid duplicates; Lua draws the configured crosshair or necessary aiming reticle. The desktop cursor is restored on leaving the window.
+
 **English** | [中文](README_zh.md) | [日本語](README_ja.md)
 
 Hides the mouse cursor by replacing the game's native cursor texture with a
