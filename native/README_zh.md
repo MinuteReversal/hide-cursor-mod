@@ -34,7 +34,9 @@
 
 源码构建需要 MinGW-w64 的 i686 和 x86_64 编译器，在 Bash 下运行 `windows/build.sh`。
 
-**当前 Windows 仅完成 x86 / x64 交叉编译及共用策略测试，尚未在真实 Windows 游戏内验证。** 特别需要检查窗口、无边框、全屏、Alt+Tab、Steam Overlay 和窗口外鼠标恢复。
+Windows 已完成 x86 / x64 编译，并在一台真实 Windows 游戏环境中由用户确认：加载原生辅助程序后行为与 Mac 一致。此前仅订阅 Workshop 时系统白箭头仍在，加载辅助程序后恢复正常。这不代表窗口、无边框、全屏、Alt+Tab 和 Steam Overlay 的全部组合均已验收。
+
+源码仓库不包含预编译 EXE/DLL；仅下载源码或订阅 Workshop 后不能直接使用原生组件。当前每次启动游戏后均需运行一次 `attach.cmd`。一键安装器及随游戏自动加载尚未实现，默认 Lua 沙箱不能替代这一步，也无需添加 `--luadebug`。
 
 ## Linux 原生版：X11 / XWayland
 
@@ -59,7 +61,7 @@ Linux 的 Xvfb 测试检查真实 X11 光标像素、菜单开关、游戏阶段
 
 ## 验证与发布范围
 
-所有平台原生组件都是本地预览版。macOS 已由用户试用，Windows / Linux 尚需真实目标游戏验证；未上传 Steam Workshop、未创建发布或修改 Steam 启动参数。
+所有平台原生组件都是本地预览版。macOS 和 Windows 已由用户试用确认；Windows 仍需扩大场景验证，Linux 尚需真实目标游戏验证。原生二进制未通过 Steam Workshop 分发；当前未创建发布或修改 Steam 启动参数。
 
 共用策略测试：`cc tests/cursor_state.c -o /tmp/hc-state && /tmp/hc-state`。
 Linux 虚拟窗口测试：构建 `tests/Dockerfile.linux`，在容器中挂载仓库并运行 `tests/linux-check.sh`。

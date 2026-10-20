@@ -1,6 +1,19 @@
 # Hide Cursor
 
-Native desktop adapters for macOS, Windows x86/x64 and Linux X11/XWayland are available as a preview. See [platform setup and validation limits](native/README_zh.md). The native components require a separate launcher/helper; Workshop Lua subscription alone does not load them. Windows has build verification only; Linux has Xvfb window tests, not real-game acceptance.
+Native desktop adapters for macOS, Windows x86/x64 and Linux X11/XWayland are available as a preview. See [platform setup and validation limits](native/README_zh.md). The native components require a separate launcher/helper; Workshop Lua subscription alone does not load them. A user has confirmed Windows behavior matches Mac in one real-game environment; Linux has Xvfb window tests, not real-game acceptance.
+
+## Windows installation and startup
+
+**Workshop subscription does not install or start the native helper.** Lua handles settings and the in-game crosshair; the native component handles the system arrow. Without the helper, the arrow may remain visible or overlap the crosshair.
+
+1. Subscribe to and enable the updated mod. Avoid enabling multiple copies.
+2. Prepare matching Windows native binaries separately: `HideCursor.exe` and `HideCursor.dll` in each of `native/windows/build/x86/` and `build/x64/`. The source repository does not include binaries; build them before using the launcher.
+3. Start the game through Steam, then run `native/windows/attach.cmd`.
+4. Wait for **Native component confirmed in PID ...** and keep the helper running until the game exits. Repeat after each game restart; do not attach twice to the same game process.
+
+With the helper loaded, OFF hides the system arrow while retaining necessary aiming reticles. ON shows the system arrow in menus and the white/red crosshair in a run. Leaving the game window restores the desktop cursor. For mouse controls, set `MouseControl=1` in the active save directory's `options.ini` and restart the game.
+
+**A one-time installer and automatic loading are planned, not implemented.** The default Lua sandbox cannot install or launch EXE/DLL files. For now, run the helper as described above; `--luadebug` is not required.
 
 
 

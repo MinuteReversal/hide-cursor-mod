@@ -1,12 +1,26 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <metadata>
-    <name>Hide Cursor</name>
-    <directory>hide cursor</directory>
-    <id>3769589830</id>
-    <description>Hides the mouse cursor by default. Restores a white/red crosshair only when MouseControl=1 and you hold mouse-aim items (Epic Fetus, Ludovico, etc.). Keyboard/controller (MouseControl off): no change. 中文：默认隐藏；仅鼠标模式+瞄准道具时显示准星。日本語：デフォルト非表示。MouseControl=1かつ照準アイテム時のみ表示。Source: https://github.com/MinuteReversal/hide-cursor-mod</description>
-    <version>8</version>
-    <visibility>Public</visibility>
-    <tag id="Lua"/>
-    <tag id="Tweaks"/>
-    <tag id="Graphics"/>
+  <name>Hide Cursor</name>
+  <directory>hide cursor</directory>
+  <id>3769589830</id>
+  <description>Hide Cursor — configurable cursor visibility.
+
+Always Show Cursor is OFF by default. Press F10 during a run to configure, or use Mod Config Menu &gt; Hide Cursor &gt; General. Settings are saved per save slot. ON shows a white crosshair (red while holding the left mouse button); OFF retains necessary aiming reticles. For mouse controls set MouseControl=1 in options.ini and restart the game.
+
+IMPORTANT — Windows native helper required for the system arrow:
+Workshop subscription alone does NOT install or start the native helper. Without it the system white arrow may remain visible or overlap the crosshair.
+Download the Windows helper from https://github.com/MinuteReversal/hide-cursor-mod/releases/tag/v9
+Extract the whole ZIP, start Isaac through Steam, then run attach.cmd. Wait for "Native component confirmed in PID ..." and keep the helper running until the game exits. Repeat after every game restart; do not attach twice to the same game process. No --luadebug required. A one-time installer/automatic loading is not implemented yet.
+With the helper: OFF hides the menu arrow; ON shows the menu arrow. During a run Lua draws the crosshair and the native system arrow is hidden. Leaving the window restores the desktop cursor. Windows behavior was confirmed by a user in one real-game environment; not every display/overlay combination has been tested.
+
+中文说明：默认关闭「始终显示光标」，游戏内按 F10 或使用 Mod Config Menu 设置，每个存档独立保存。开启后显示白色准星，按住左键变红。鼠标控制需在 options.ini 设置 MouseControl=1 并重启游戏。
+【Windows 必看】只订阅工坊不会安装或启动原生辅助程序，系统白箭头可能仍显示。请从上面的 GitHub Release 下载 Windows 辅助程序，完整解压，先启动游戏，再运行 attach.cmd。看到 Native component confirmed in PID ... 才表示加载成功；保持辅助程序运行，每次重启游戏后重新运行一次，同一进程不要重复挂载。当前尚无一键安装器或自动加载功能，无需添加 --luadebug。加载后 OFF 隐藏菜单箭头，ON 显示菜单箭头，游戏内由 Lua 绘制准星；移出窗口恢复桌面光标。Windows 已实机确认与 Mac 行为一致，尚未覆盖所有窗口和 Overlay 组合。
+
+macOS requires its separate native launcher; Linux native X11 support is experimental and not verified in a real game. Steam Deck/Proton is not confirmed. See the source documentation for platform setup and limits.
+Source: https://github.com/MinuteReversal/hide-cursor-mod</description>
+  <version>9</version>
+  <visibility>Public</visibility>
+  <tag id="Lua" />
+  <tag id="Tweaks" />
+  <tag id="Graphics" />
 </metadata>
